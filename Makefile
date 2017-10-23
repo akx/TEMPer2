@@ -22,3 +22,5 @@ clean:
 rules-install:			# must be superuser to do this
 	cp 99-tempsensor.rules /etc/udev/rules.d
 
+reformat:
+	clang-format -i *.c *.h

@@ -30,37 +30,33 @@
  */
 
 struct TemperData {
-	float value;
-	enum Unit {
-		TEMPER_UNAVAILABLE,	/* unavailable data */
-		TEMPER_REL_HUM, 	/* relative humidity (in %) */
-		TEMPER_ABS_TEMP,	/* absolute temperature  (in °C) */
-	} unit;
+  float value;
+  enum Unit {
+    TEMPER_UNAVAILABLE, /* unavailable data */
+    TEMPER_REL_HUM, /* relative humidity (in %) */
+    TEMPER_ABS_TEMP, /* absolute temperature  (in °C) */
+  } unit;
 };
 typedef struct TemperData TemperData;
 
-#define TemperUnitToString(unit) ( (unit == TEMPER_ABS_TEMP) ? "°C" : \
-				   (unit == TEMPER_REL_HUM) ? "%RH" : \
-				   "" \
-	)
+#define TemperUnitToString(unit) ((unit == TEMPER_ABS_TEMP) ? "°C" : (unit == TEMPER_REL_HUM) ? "%RH" : "")
 
 struct Temper {
-        struct usb_device *device;
-        usb_dev_handle *handle;
-        int debug;
-        int timeout;
-        const struct Product    *product;
+  struct usb_device *device;
+  usb_dev_handle *handle;
+  int debug;
+  int timeout;
+  const struct Product *product;
 };
 typedef struct Temper Temper;
 
-
-typedef int (*TemperConvertFct)(Temper*, int16_t word, TemperData* dst);
+typedef int (*TemperConvertFct)(Temper *, int16_t word, TemperData *dst);
 
 struct Product {
-        uint16_t                vendor;
-        uint16_t                id;
-        const char              *name;
-        TemperConvertFct        convert[2]; /* Arbitrary limit ? */
+  uint16_t vendor;
+  uint16_t id;
+  const char *name;
+  TemperConvertFct convert[2]; /* Arbitrary limit ? */
 };
 
 Temper *TemperCreateFromDeviceNumber(int deviceNum, int timeout, int debug);
@@ -72,9 +68,8 @@ int TemperSendCommand8(Temper *t, int a, int b, int c, int d, int e, int f, int 
 int TemperSendCommand2(Temper *t, int a, int b);
 int TemperGetData(Temper *t, TemperData *data, unsigned int count);
 
-int TemperInterruptRead(Temper* t, unsigned char *buf, unsigned int len);
+int TemperInterruptRead(Temper *t, unsigned char *buf, unsigned int len);
 
-int TemperGetSerialNumber(Temper* t, char* buf, unsigned int len);
+int TemperGetSerialNumber(Temper *t, char *buf, unsigned int len);
 
 #endif
-

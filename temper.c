@@ -1,8 +1,8 @@
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <strings.h>
 #include <usb.h>
-#include <errno.h>
 
 /*
  * Temper.c by Robert Kavaler (c) 2009 (relavak.com)
@@ -35,31 +35,29 @@
 #include "comm.h"
 
 #if !defined TEMPER_TIMEOUT
-#define TEMPER_TIMEOUT 1000	/* milliseconds */
+#define TEMPER_TIMEOUT 1000 /* milliseconds */
 #endif
 
 #if !defined TEMPER_DEBUG
 #define TEMPER_DEBUG 0
 #endif
 
-int
-main(void)
-{
-	Temper *t;
-	int ret;
+int main(void) {
+  Temper *t;
+  int ret;
 
-	usb_set_debug(0);
-	usb_init();
-	usb_find_busses();
-	usb_find_devices();
+  usb_set_debug(0);
+  usb_init();
+  usb_find_busses();
+  usb_find_devices();
 
-	t = TemperCreateFromDeviceNumber(0, TEMPER_TIMEOUT, TEMPER_DEBUG);
-	if(!t) {
-		perror("TemperCreate");
-		exit(-1);
-	}
+  t = TemperCreateFromDeviceNumber(0, TEMPER_TIMEOUT, TEMPER_DEBUG);
+  if (!t) {
+    perror("TemperCreate");
+    exit(-1);
+  }
 
-/*
+  /*
 	TemperSendCommand(t, 10, 11, 12, 13, 0, 0, 2, 0);
 	TemperSendCommand(t, 0x43, 0, 0, 0, 0, 0, 0, 0);
 	TemperSendCommand(t, 0, 0, 0, 0, 0, 0, 0, 0);
@@ -70,27 +68,25 @@ main(void)
 	TemperSendCommand(t, 0, 0, 0, 0, 0, 0, 0, 0);
 */
 
-//	TemperSendCommand2(t, 0x01,0x01);
-//	TemperSendCommand8(t, 0x48, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
-	TemperSendCommand8(t, 0x01, 0x80, 0x33, 0x01, 0x00, 0x00, 0x00, 0x00);
-	if (0) {
-		unsigned char buf[8];
-		TemperInterruptRead(t, buf, sizeof(buf));
-	}
-	else {
-		TemperData data[2];
-		const unsigned int count = sizeof(data)/sizeof(TemperData);
-		ret = TemperGetData(t,data, count);
-		printf("%4d", ret);
-		for (unsigned i = 0; i < count; ++i)
-			printf(";%f %s", 
-				data[i].value, 
-				TemperUnitToString(data[i].unit));
-		char sn[80];
-		TemperGetSerialNumber(t, sn, sizeof(sn));
-		printf(";%s;%s\n", t->product->name, sn);
-	}
+  //	TemperSendCommand2(t, 0x01,0x01);
+  //	TemperSendCommand8(t, 0x48, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
+  TemperSendCommand8(t, 0x01, 0x80, 0x33, 0x01, 0x00, 0x00, 0x00, 0x00);
+  if (0) {
+    unsigned char buf[8];
+    TemperInterruptRead(t, buf, sizeof(buf));
+  } else {
+    TemperData data[2];
+    const unsigned int count = sizeof(data) / sizeof(TemperData);
+    ret = TemperGetData(t, data, count);
+    printf("%4d", ret);
+    for (unsigned i = 0; i < count; ++i)
+      printf(";%f %s",
+             data[i].value,
+             TemperUnitToString(data[i].unit));
+    char sn[80];
+    TemperGetSerialNumber(t, sn, sizeof(sn));
+    printf(";%s;%s\n", t->product->name, sn);
+  }
 
-	return 0;
+  return 0;
 }
-
