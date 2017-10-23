@@ -1,4 +1,5 @@
 #include <errno.h>
+#include <jansson.h>
 #include <stdio.h>
 #include <string.h>
 #include <strings.h>
@@ -34,59 +35,56 @@
 
 #include "comm.h"
 
-#if !defined TEMPER_TIMEOUT
-#define TEMPER_TIMEOUT 1000 /* milliseconds */
-#endif
+json_t *process_temper_device(int deviceNum) {
+  Temper *t = TemperCreateFromDeviceNumber(deviceNum, 1000, 0);
+  if (!t) {
+    return NULL;
+  }
+  char sn[80];
+  TemperGetSerialNumber(t, sn, sizeof(sn));
+  json_t *device_obj = json_object();
+  json_object_set(device_obj, "name", json_string(t->product->name));
+  json_object_set(device_obj, "vid", json_integer(t->product->vendor));
+  json_object_set(device_obj, "pid", json_integer(t->product->id));
+  json_object_set(device_obj, "sn", json_string(sn));
+  json_t *sensors_arr = json_array();
+  json_object_set(device_obj, "sensors", sensors_arr);
 
-#if !defined TEMPER_DEBUG
-#define TEMPER_DEBUG 0
-#endif
+  TemperSendCommand8(t, 0x01, 0x80, 0x33, 0x01, 0x00, 0x00, 0x00, 0x00);
+  const int nMaxData = 2;
+  TemperData data[nMaxData];
+  int ret = TemperGetData(t, data, nMaxData);
+
+  for (unsigned i = 0; i < nMaxData; ++i) {
+    if (data[i].unit == TEMPER_UNAVAILABLE)
+      continue;
+    json_t *sensor_datum = json_object();
+    json_object_set(sensor_datum, "id", json_integer(i));
+    json_object_set(sensor_datum, "value", json_real(data[i].value));
+    json_object_set(sensor_datum, "unit", json_string(TemperUnitToString(data[i].unit)));
+    json_array_append(sensors_arr, sensor_datum);
+  }
+  TemperFree(t);
+  return device_obj;
+}
 
 int main(void) {
-  Temper *t;
-  int ret;
-
   usb_set_debug(0);
   usb_init();
   usb_find_busses();
   usb_find_devices();
+  json_t *device_array = json_array();
 
-  t = TemperCreateFromDeviceNumber(0, TEMPER_TIMEOUT, TEMPER_DEBUG);
-  if (!t) {
-    perror("TemperCreate");
-    exit(-1);
+  for (int deviceNum = 0;; deviceNum++) {
+    json_t *device_obj = process_temper_device(deviceNum);
+    if (device_obj == NULL) {
+      break;
+    }
+    json_array_append(device_array, device_obj);
   }
-
-  /*
-	TemperSendCommand(t, 10, 11, 12, 13, 0, 0, 2, 0);
-	TemperSendCommand(t, 0x43, 0, 0, 0, 0, 0, 0, 0);
-	TemperSendCommand(t, 0, 0, 0, 0, 0, 0, 0, 0);
-	TemperSendCommand(t, 0, 0, 0, 0, 0, 0, 0, 0);
-	TemperSendCommand(t, 0, 0, 0, 0, 0, 0, 0, 0);
-	TemperSendCommand(t, 0, 0, 0, 0, 0, 0, 0, 0);
-	TemperSendCommand(t, 0, 0, 0, 0, 0, 0, 0, 0);
-	TemperSendCommand(t, 0, 0, 0, 0, 0, 0, 0, 0);
-*/
-
-  //	TemperSendCommand2(t, 0x01,0x01);
-  //	TemperSendCommand8(t, 0x48, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
-  TemperSendCommand8(t, 0x01, 0x80, 0x33, 0x01, 0x00, 0x00, 0x00, 0x00);
-  if (0) {
-    unsigned char buf[8];
-    TemperInterruptRead(t, buf, sizeof(buf));
-  } else {
-    TemperData data[2];
-    const unsigned int count = sizeof(data) / sizeof(TemperData);
-    ret = TemperGetData(t, data, count);
-    printf("%4d", ret);
-    for (unsigned i = 0; i < count; ++i)
-      printf(";%f %s",
-             data[i].value,
-             TemperUnitToString(data[i].unit));
-    char sn[80];
-    TemperGetSerialNumber(t, sn, sizeof(sn));
-    printf(";%s;%s\n", t->product->name, sn);
-  }
-
+  char *json_data = json_dumps(device_array, JSON_INDENT(2) | JSON_SORT_KEYS);
+  puts(json_data);
+  free(json_data);
+  json_decref(device_array);
   return 0;
 }

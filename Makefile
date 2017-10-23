@@ -14,7 +14,7 @@ all:	temper
 	$(CC) -c $(CFLAGS) -DUNIT_TEST -o $@ $^
 
 temper:		$(TEMPER_OBJS) temper.o
-	$(CC) $(LDFLAGS) -o $@ $^ -lusb
+	$(CC) $(LDFLAGS) -o $@ $^ -lusb -ljansson
 
 clean:		
 	rm -f temper *.o
