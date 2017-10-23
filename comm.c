@@ -98,39 +98,24 @@ TemperCreate(struct usb_device *dev, int timeout, int debug, const struct Produc
     printf("Trying to detach kernel driver\n");
   }
 
-  ret = usb_detach_kernel_driver_np(t->handle, 0);
-  if (ret) {
-    if (errno == ENODATA) {
-      if (t->debug) {
-        printf("Device already detached\n");
+  for (int iface = 0; iface < 2; iface++) {
+    ret = usb_detach_kernel_driver_np(t->handle, iface);
+    if (ret) {
+      if (errno == ENODATA) {
+        if (t->debug) {
+          printf("Device already detached\n");
+        }
+      } else {
+        if (t->debug) {
+          printf("Detach failed: %s[%d]\n",
+                 strerror(errno), errno);
+          printf("Continuing anyway\n");
+        }
       }
     } else {
       if (t->debug) {
-        printf("Detach failed: %s[%d]\n",
-               strerror(errno), errno);
-        printf("Continuing anyway\n");
+        printf("detach successful\n");
       }
-    }
-  } else {
-    if (t->debug) {
-      printf("detach successful\n");
-    }
-  }
-  ret = usb_detach_kernel_driver_np(t->handle, 1);
-  if (ret) {
-    if (errno == ENODATA) {
-      if (t->debug)
-        printf("Device already detached\n");
-    } else {
-      if (t->debug) {
-        printf("Detach failed: %s[%d]\n",
-               strerror(errno), errno);
-        printf("Continuing anyway\n");
-      }
-    }
-  } else {
-    if (t->debug) {
-      printf("detach successful\n");
     }
   }
 
