@@ -27,7 +27,7 @@
 #include <usb.h>
 
 json_t *process_temper_device(int deviceNum) {
-  Temper *t = TemperCreateFromDeviceNumber(deviceNum, 1000, 0);
+  Temper *t = TemperCreateFromDeviceNumber(deviceNum, 1000, getenv("TEMPER_DEBUG") ? 1 : 0);
   if (!t) {
     return NULL;
   }
@@ -42,9 +42,10 @@ json_t *process_temper_device(int deviceNum) {
   json_object_set(device_obj, "sensors", sensors_arr);
 
   TemperSendCommand8(t, 0x01, 0x80, 0x33, 0x01, 0x00, 0x00, 0x00, 0x00);
+
   const int nMaxData = 2;
   TemperData data[nMaxData];
-  int ret = TemperGetData(t, data, nMaxData);
+  TemperGetData(t, data, nMaxData);
 
   for (unsigned i = 0; i < nMaxData; ++i) {
     if (data[i].unit == TEMPER_UNAVAILABLE)
