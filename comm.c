@@ -289,18 +289,18 @@ static int TemperUnavailable(Temper *t, int16_t word, TemperData *dst) {
 
 int TemperGetData(Temper *t, struct TemperData *data, unsigned int count) {
   unsigned char buf[8];
-  int ret = TemperInterruptRead(t, buf, sizeof(buf));
-
+  int nBytesRead = TemperInterruptRead(t, buf, sizeof(buf));
   for (int i = 0; i < count; ++i) {
-    if ((2 * i + 3) < ret) {
-      int16_t word = ((int8_t)buf[2 * i + 2] << 8) | buf[2 * i + 3];
+    int offset = 2 + i * 2;
+    if (nBytesRead >= offset + 1) {
+      int16_t word = ((int8_t)buf[offset] << 8) | buf[offset + 1];
       t->product->convert[i](t, word, &data[i]);
     } else {
       TemperUnavailable(t, 0, &data[i]);
     }
   }
 
-  return ret;
+  return nBytesRead;
 }
 
 int TemperGetSerialNumber(Temper *t, char *buf, unsigned int len) {
