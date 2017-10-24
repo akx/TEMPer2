@@ -243,6 +243,10 @@ static int TEMPer2V13ToTemperature(Temper *t, int16_t word, TemperData *dst) {
 #if 0
 	word += t->offset; /* calibration value */
 #endif
+  if (word == 0xFFFF) {
+    TemperUnavailable(t, 0xFFFF, dst);
+    return 0;
+  }
 
   dst->value = ((float)word) * (125.0 / 32000.0);
   dst->unit = TEMPER_ABS_TEMP;
