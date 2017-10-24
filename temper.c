@@ -1,25 +1,13 @@
-#include <errno.h>
-#include <jansson.h>
-#include <stdio.h>
-#include <string.h>
-#include <strings.h>
-#include <usb.h>
-
 /*
- * Temper.c by Robert Kavaler (c) 2009 (relavak.com)
- * All rights reserved.
- *
- * Modified by Sylvain Leroux (c) 2012 (sylvain@chicoree.fr)
- *
- * Temper driver for linux. This program can be compiled either as a library
- * or as a standalone program (-DUNIT_TEST). The driver will work with some
- * TEMPer usb devices from RDing (www.PCsensor.com).
+ * Robert Kavaler (c) 2009 (relavak.com) - All rights reserved.
+ * Sylvain Leroux (c) 2012 (sylvain@chicoree.fr)
+ * Aarni Koskela (c) 2017 (akx@iki.fi)
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHORS ''AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -30,10 +18,13 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  */
 
 #include "comm.h"
+#include <jansson.h>
+#include <stdio.h>
+#include <usb.h>
 
 json_t *process_temper_device(int deviceNum) {
   Temper *t = TemperCreateFromDeviceNumber(deviceNum, 1000, 0);

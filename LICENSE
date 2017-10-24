@@ -1,12 +1,6 @@
-Temper original work by Robert Kavaler (c) 2009 (relavak.com)
-All rights reserved.
-
+Original work by Robert Kavaler (c) 2009 (relavak.com), all rights reserved.
 Modified by Sylvain Leroux (c) 2012 (sylvain@chicoree.fr)
-
-
-Temper driver for linux. This program can be compiled either as a library
-or as a standalone program (-DUNIT_TEST). The driver will work with some
-TEMPer usb devices from RDing (www.PCsensor.com).
+Modified by Aarni Koskela (c) 2017 (akx@iki.fi)
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
